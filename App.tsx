@@ -1,36 +1,72 @@
-import React, { useState } from 'react';
-import { FlatList, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { Ionicons, AntDesign } from '@expo/vector-icons';
+import React from 'react';
+import { View, StyleSheet, Text, FlatList, TouchableOpacity, TextInput } from 'react-native';
 
-const Tarefas = ({ item, index, onDelete }) => {
+import { Ionicons } from '@expo/vector-icons';
+
+
+const Tarefas = ({ item, indice, delTarefa, marcarTarefa }) => {
   return (
-    <View style={{ marginBottom: 10, backgroundColor: 'white', padding: 10, borderRadius: 10, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-      <Text>{item}</Text>
-      <TouchableOpacity onPress={() => onDelete(index)} style={styles.addBtn}>
-        <AntDesign name="delete" size={25} color="red" />
-      </TouchableOpacity>
-    </View>
+    <TouchableOpacity onPress={() => marcarTarefa(indice)}>
+      <View style={{ marginBottom: 10, backgroundColor: 'white', padding: 10, borderRadius: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Text style={{ textDecorationLine: item.isConcluido ? 'line-through' : null }}>{item.tarefa}</Text>
+        <View style={{ flexDirection: 'row' }}>
+          <TouchableOpacity onPress={() => delTarefa(indice)}>
+            <Ionicons name="trash" size={24} color="red" />
+          </TouchableOpacity>
+
+          {item.isConcluido && (
+            <Ionicons name="checkmark-done" size={24} color="green" />
+          )}
+        </View>
+      </View>
+    </TouchableOpacity>
   );
-};
+}
+
 
 const App = () => {
-  const [tarefas, setTarefas] = useState(['Teste']);
-  const [tarefa, setTarefa] = useState('');
+
+  const [tarefas, setTarefas] = React.useState([]);
+  const [tarefa, setTarefa] = React.useState(null);
 
   function adicionarTarefa() {
+
     if (tarefa === '') {
-      alert('Digite uma tarefa');
-      return;
+      return alert('Digite uma tarefa');
     }
 
-    setTarefas([...tarefas, tarefa]);
-    setTarefa('');
+    const novaTarefa = {
+      tarefa: tarefa,
+      isConcluido: false
+    }
+
+    setTarefas([...tarefas, novaTarefa]);
+    setTarefa(null);
   }
 
-  function deletarTarefa(index) {
-    const newTarefas = tarefas.filter((_, i) => i !== index);
-    setTarefas(newTarefas);
+  function deletarTarefa(indice) {
+    // copia do array
+    const copiaTarefas = [...tarefas];
+
+    // atualizar item
+    const arrayAtualizado = copiaTarefas.filter((_, index) => index !== indice);
+
+    // atualizar estado
+    setTarefas(arrayAtualizado);
   }
+
+  function marcarTarefa(indice) {
+    // copia do array
+    const copiaTarefas = [...tarefas];
+
+    // atualizar item
+    copiaTarefas[indice].isConcluido = !copiaTarefas[indice].isConcluido;
+
+    // atualizar estado
+    setTarefas(copiaTarefas);
+
+  }
+
 
   return (
     <View style={styles.container}>
@@ -39,7 +75,7 @@ const App = () => {
       <FlatList
         data={tarefas}
         renderItem={({ item, index }) => (
-          <Tarefas item={item} index={index} onDelete={deletarTarefa} />
+          <Tarefas item={item} indice={index} delTarefa={deletarTarefa} marcarTarefa={marcarTarefa} />
         )}
         keyExtractor={(item, index) => index.toString()}
       />
@@ -65,8 +101,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#f0f0f0',
     padding: 20,
-    paddingTop: 90,
-    justifyContent: 'space-between'
+    paddingTop: 90
   },
   title: {
     fontSize: 24,
@@ -75,14 +110,14 @@ const styles = StyleSheet.create({
   },
   inputContainer: {
     marginBottom: 20,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 30
+    flexDirection: 'row', //eixo horizontal
+    justifyContent: 'center', // alinhamento horizontal
+    alignItems: 'center', // alinhamento vertical
+    padding: 30,
   },
   input: {
     height: 40,
-    borderRadius: 15,
+    borderRadius: 8,
     borderColor: 'gray',
     paddingHorizontal: 10,
     backgroundColor: 'white',
